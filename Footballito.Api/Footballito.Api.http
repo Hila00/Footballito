@@ -1,0 +1,6 @@
+@Footballito.Api_HostAddress = http://localhost:5186
+
+GET {{Footballito.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Footballito.Api/Footballito.Api.csproj" />
+  <Project Path="Footballito.Application/Footballito.Application.csproj" />
+  <Project Path="Footballito.Persistence/Footballito.Persistence.csproj" />
+</Solution>
