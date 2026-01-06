@@ -1,3 +1,4 @@
+using Footballito.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Footballito.Persistence;
@@ -52,28 +53,5 @@ public class FootballContext : DbContext
     }
 }
 
-public class Team
-{
-    public required int Id { get; set; }
-    public required string? Name { get; set; }
-    public required string? City { get; set; }
-}
 
-public class Player
-{
-    public required int Id { get; set; }
-    public required string FirstName { get; set; }
-    public required string LastName { get; set; }
-    public required int TeamId { get; set; }
-}
-
-public class Match
-{
-    public required int Id { get; set; }
-    public DateTime Date { get; set; }
-    public required int HomeTeamId { get; set; }
-    public required int AwayTeamId { get; set; }
-    public int HomeTeamScore { get; set; }
-    public int AwayTeamScore { get; set; }
-}
 
