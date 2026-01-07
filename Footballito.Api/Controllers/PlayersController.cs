@@ -1,4 +1,5 @@
 using Footballito.Application.Interfaces;
+using Footballito.Domain.Entities;
 using Footballito.Persistence;
 using Microsoft.AspNetCore.Mvc;
 

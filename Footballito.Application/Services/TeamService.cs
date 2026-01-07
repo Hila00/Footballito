@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Footballito.Persistence;
 using Footballito.Application.Interfaces;
+using Footballito.Domain.Entities;
 
 namespace Footballito.Application.Services;
 

@@ -1,3 +1,4 @@
+using Footballito.Domain.Entities;
 using Footballito.Persistence;
 
 namespace Footballito.Application.Interfaces;
