@@ -1,13 +1,12 @@
 using Footballito.Domain.Entities;
-using Footballito.Persistence;
 
 namespace Footballito.Application.Interfaces;
 
 public interface IPlayerService
 {
     Task<List<Player>> GetAllAsync();
-    Task<Player?> GetByIdAsync(int id);
+    Task<Player> GetByIdAsync(int id);
     Task<Player> CreateAsync(Player player);
-    Task<bool> UpdateAsync(Player player);
-    Task<bool> DeleteAsync(int id);
+    Task UpdateAsync(Player player);
+    Task DeleteAsync(int id);
 }

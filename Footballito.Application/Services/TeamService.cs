@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Footballito.Persistence;
+using Footballito.Application.Exceptions;
 using Footballito.Application.Interfaces;
 using Footballito.Domain.Entities;
 
@@ -19,9 +20,10 @@ public class TeamService : ITeamService
         return await _db.Teams.AsNoTracking().ToListAsync();
     }
 
-    public async Task<Team?> GetByIdAsync(int id)
+    public async Task<Team> GetByIdAsync(int id)
     {
-        return await _db.Teams.FindAsync(id);
+        var team = await _db.Teams.FindAsync(id) ?? throw new NotFoundException($"Team {id} not found");
+        return team;
     }
 
     public async Task<Team> CreateAsync(Team team)
@@ -31,22 +33,20 @@ public class TeamService : ITeamService
         return team;
     }
 
-    public async Task<bool> UpdateAsync(Team team)
+    public async Task UpdateAsync(Team team)
     {
         var existing = await _db.Teams.FindAsync(team.Id);
-        if (existing is null) return false;
+        if (existing is null) throw new NotFoundException($"Team {team.Id} not found");
         existing.Name = team.Name;
         existing.City = team.City;
         await _db.SaveChangesAsync();
-        return true;
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task DeleteAsync(int id)
     {
         var existing = await _db.Teams.FindAsync(id);
-        if (existing is null) return false;
+        if (existing is null) throw new NotFoundException($"Team {id} not found");
         _db.Teams.Remove(existing);
         await _db.SaveChangesAsync();
-        return true;
     }
 }

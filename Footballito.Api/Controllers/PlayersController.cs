@@ -1,6 +1,6 @@
 using Footballito.Application.Interfaces;
-using Footballito.Domain.Entities;
-using Footballito.Persistence;
+using Footballito.Api.Mappings;
+using Footballito.Api.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Footballito.Api.Controllers
@@ -21,41 +21,41 @@ namespace Footballito.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Player>>> GetAll() => Ok(await _playerService.GetAllAsync());
+        public async Task<ActionResult<List<PlayerDto>>> GetAll()
+        {
+            var players = await _playerService.GetAllAsync();
+            return Ok(players.Select(p => p.ToDto()).ToList());
+        }
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<Player>> Get(int id)
+        public async Task<ActionResult<PlayerDto>> Get(int id)
         {
             var player = await _playerService.GetByIdAsync(id);
-            return player is null ? NotFound("Player not found") : Ok(player);
+            return Ok(player.ToDto());
         }
 
         [HttpPost]
-        public async Task<ActionResult<Player>> Create([FromBody] Player create)
+        public async Task<ActionResult<PlayerDto>> Create([FromBody] CreatePlayerDto create)
         {
             if (create is null) return BadRequest();
-            create.Id = _random.Next(1, int.MaxValue);
-            await _playerService.CreateAsync(create);
-            return CreatedAtAction(nameof(Get), new { id = create.Id }, create);
+            var id = _random.Next(1, int.MaxValue);
+            var player = create.ToEntity(id);
+            var createdPlayer = await _playerService.CreateAsync(player);
+            return CreatedAtAction(nameof(Get), new { id = createdPlayer.Id }, createdPlayer.ToDto());
         }
 
         [HttpPut("{id:int}")]
-        public async Task<ActionResult> Update(int id, [FromBody] Player update)
+        public async Task<ActionResult> Update(int id, [FromBody] UpdatePlayerDto update)
         {
-            var existing = await _playerService.GetByIdAsync(id);
-            if (existing is null) return NotFound();
-            existing.FirstName = update.FirstName;
-            existing.LastName = update.LastName;
-            existing.TeamId = update.TeamId;
-            await _playerService.UpdateAsync(existing);
+            if (update is null) return BadRequest();
+            var player = update.ToEntity(id);
+            await _playerService.UpdateAsync(player);
             return NoContent();
         }
 
         [HttpDelete("{id:int}")]
         public async Task<ActionResult> Delete(int id)
         {
-            var existing = await _playerService.GetByIdAsync(id);
-            if (existing is null) return NotFound();
             await _playerService.DeleteAsync(id);
             return NoContent();
         }

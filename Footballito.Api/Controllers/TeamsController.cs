@@ -1,6 +1,6 @@
 using Footballito.Application.Interfaces;
-using Footballito.Domain.Entities;
-using Footballito.Persistence;
+using Footballito.Api.Mappings;
+using Footballito.Api.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Footballito.Api.Controllers
@@ -9,7 +9,6 @@ namespace Footballito.Api.Controllers
     [Route("api/[controller]")]
     public class TeamsController : ControllerBase
     {
-
         private readonly ILogger<TeamsController> _logger;
         private readonly ITeamService _teamService;
         private readonly Random _random;
@@ -22,39 +21,41 @@ namespace Footballito.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Team>>> GetAll() => Ok(await _teamService.GetAllAsync());
+        public async Task<ActionResult<List<TeamDto>>> GetAll()
+        {
+            var teams = await _teamService.GetAllAsync();
+            return Ok(teams.Select(t => t.ToDto()).ToList());
+        }
 
         [HttpGet("{id:int}")]
-        public ActionResult<Team> Get(int id)
+        public async Task<ActionResult<TeamDto>> Get(int id)
         {
-            var team = _teamService.GetByIdAsync(id);
-            return team is null ? NotFound("Team is not found") : Ok(team);
+            var team = await _teamService.GetByIdAsync(id);
+            return Ok(team.ToDto());
         }
 
         [HttpPost]
-        public async Task<ActionResult<Team>> Create([FromBody] Team create)
+        public async Task<ActionResult<TeamDto>> Create([FromBody] CreateTeamDto create)
         {
             if (create is null) return BadRequest();
-            create.Id = _random.Next();
-            await _teamService.CreateAsync(create);
-            return CreatedAtAction(nameof(Get), new { id = create.Id }, create);
+            var id = _random.Next();
+            var team = create.ToEntity(id);
+            var createdTeam = await _teamService.CreateAsync(team);
+            return CreatedAtAction(nameof(Get), new { id = createdTeam.Id }, createdTeam.ToDto());
         }
 
         [HttpPut("{id:int}")]
-        public async Task<ActionResult> Update(int id, [FromBody] Team update)
+        public async Task<ActionResult> Update(int id, [FromBody] UpdateTeamDto update)
         {
-            var existing = await _teamService.GetByIdAsync(id);
-            if (existing is null) return NotFound();
-            existing.Name = update.Name;
-            existing.City = update.City;
+            if (update is null) return BadRequest();
+            var team = update.ToEntity(id);
+            await _teamService.UpdateAsync(team);
             return NoContent();
         }
 
         [HttpDelete("{id:int}")]
         public async Task<ActionResult> Delete(int id)
         {
-            var existing = await _teamService.GetByIdAsync(id);
-            if (existing is null) return NotFound();
             await _teamService.DeleteAsync(id);
             return NoContent();
         }

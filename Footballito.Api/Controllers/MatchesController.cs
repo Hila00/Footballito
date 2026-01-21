@@ -1,6 +1,6 @@
 using Footballito.Application.Interfaces;
-using Footballito.Domain.Entities;
-using Footballito.Persistence;
+using Footballito.Api.Mappings;
+using Footballito.Api.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Footballito.Api.Controllers
@@ -21,43 +21,41 @@ namespace Footballito.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Match>>> GetAll() => Ok(await _matchService.GetAllAsync());
+        public async Task<ActionResult<List<MatchDto>>> GetAll()
+        {
+            var matches = await _matchService.GetAllAsync();
+            return Ok(matches.Select(m => m.ToDto()).ToList());
+        }
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<Match>> Get(int id)
+        public async Task<ActionResult<MatchDto>> Get(int id)
         {
             var match = await _matchService.GetByIdAsync(id);
-            return match is null ? NotFound("Match not found") : Ok(match);
+            return Ok(match.ToDto());
         }
 
         [HttpPost]
-        public async Task<ActionResult<Match>> Create([FromBody] Match create)
+        public async Task<ActionResult<MatchDto>> Create([FromBody] CreateMatchDto create)
         {
             if (create is null) return BadRequest();
-            create.Id = _random.Next(1, int.MaxValue);
-            await _matchService.CreateAsync(create);
-            return CreatedAtAction(nameof(Get), new { id = create.Id }, create);
+            var id = _random.Next(1, int.MaxValue);
+            var match = create.ToEntity(id);
+            var createdMatch = await _matchService.CreateAsync(match);
+            return CreatedAtAction(nameof(Get), new { id = createdMatch.Id }, createdMatch.ToDto());
         }
 
         [HttpPut("{id:int}")]
-        public async Task<ActionResult> Update(int id, [FromBody] Match update)
+        public async Task<ActionResult> Update(int id, [FromBody] UpdateMatchDto update)
         {
-            var existing = await _matchService.GetByIdAsync(id);
-            if (existing is null) return NotFound();
-            existing.Date = update.Date;
-            existing.HomeTeamId = update.HomeTeamId;
-            existing.AwayTeamId = update.AwayTeamId;
-            existing.HomeTeamScore = update.HomeTeamScore;
-            existing.AwayTeamScore = update.AwayTeamScore;
-            await _matchService.UpdateAsync(existing);
+            if (update is null) return BadRequest();
+            var match = update.ToEntity(id);
+            await _matchService.UpdateAsync(match);
             return NoContent();
         }
 
         [HttpDelete("{id:int}")]
         public async Task<ActionResult> Delete(int id)
         {
-            var existing = await _matchService.GetByIdAsync(id);
-            if (existing is null) return NotFound();
             await _matchService.DeleteAsync(id);
             return NoContent();
         }

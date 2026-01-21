@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Footballito.Persistence;
+using Footballito.Application.Exceptions;
 using Footballito.Application.Interfaces;
 using Footballito.Domain.Entities;
 
@@ -19,9 +20,10 @@ public class MatchService : IMatchService
         return await _db.Matches.AsNoTracking().ToListAsync();
     }
 
-    public async Task<Match?> GetByIdAsync(int id)
+    public async Task<Match> GetByIdAsync(int id)
     {
-        return await _db.Matches.FindAsync(id);
+        var match = await _db.Matches.FindAsync(id) ?? throw new NotFoundException($"Match {id} not found");
+        return match;
     }
 
     public async Task<Match> CreateAsync(Match match)
@@ -31,25 +33,21 @@ public class MatchService : IMatchService
         return match;
     }
 
-    public async Task<bool> UpdateAsync(Match match)
+    public async Task UpdateAsync(Match match)
     {
-        var existing = await _db.Matches.FindAsync(match.Id);
-        if (existing is null) return false;
+        var existing = await _db.Matches.FindAsync(match.Id) ?? throw new NotFoundException($"Match {match.Id} not found");
         existing.Date = match.Date;
         existing.HomeTeamId = match.HomeTeamId;
         existing.AwayTeamId = match.AwayTeamId;
         existing.HomeTeamScore = match.HomeTeamScore;
         existing.AwayTeamScore = match.AwayTeamScore;
         await _db.SaveChangesAsync();
-        return true;
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task DeleteAsync(int id)
     {
-        var existing = await _db.Matches.FindAsync(id);
-        if (existing is null) return false;
+        var existing = await _db.Matches.FindAsync(id) ?? throw new NotFoundException($"Match {id} not found");
         _db.Matches.Remove(existing);
         await _db.SaveChangesAsync();
-        return true;
     }
 }

@@ -1,5 +1,6 @@
 using Footballito.Application;
 using Footballito.Persistence;
+using Footballito.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,7 @@ builder.Services.AddSingleton<FootballContext>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+app.UseExceptionMiddleware();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
