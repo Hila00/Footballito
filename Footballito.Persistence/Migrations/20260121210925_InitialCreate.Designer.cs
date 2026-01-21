@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Footballito.Persistence.Migrations
 {
     [DbContext(typeof(FootballContext))]
-    [Migration("20251230032719_SeedTeams")]
-    partial class SeedTeams
+    [Migration("20260121210925_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -20,7 +20,7 @@ namespace Footballito.Persistence.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.1");
 
-            modelBuilder.Entity("Footballito.Persistence.Match", b =>
+            modelBuilder.Entity("Footballito.Domain.Entities.Match", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -42,6 +42,10 @@ namespace Footballito.Persistence.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AwayTeamId");
+
+                    b.HasIndex("HomeTeamId");
 
                     b.ToTable("Matches");
 
@@ -75,7 +79,7 @@ namespace Footballito.Persistence.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Footballito.Persistence.Player", b =>
+            modelBuilder.Entity("Footballito.Domain.Entities.Player", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -93,6 +97,8 @@ namespace Footballito.Persistence.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("TeamId");
 
                     b.ToTable("Players");
 
@@ -141,7 +147,7 @@ namespace Footballito.Persistence.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Footballito.Persistence.Team", b =>
+            modelBuilder.Entity("Footballito.Domain.Entities.Team", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -218,6 +224,45 @@ namespace Footballito.Persistence.Migrations
                             City = "Buenos Aires",
                             Name = "River Plate"
                         });
+                });
+
+            modelBuilder.Entity("Footballito.Domain.Entities.Match", b =>
+                {
+                    b.HasOne("Footballito.Domain.Entities.Team", "AwayTeam")
+                        .WithMany("AwayMatches")
+                        .HasForeignKey("AwayTeamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Footballito.Domain.Entities.Team", "HomeTeam")
+                        .WithMany("HomeMatches")
+                        .HasForeignKey("HomeTeamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AwayTeam");
+
+                    b.Navigation("HomeTeam");
+                });
+
+            modelBuilder.Entity("Footballito.Domain.Entities.Player", b =>
+                {
+                    b.HasOne("Footballito.Domain.Entities.Team", "Team")
+                        .WithMany("Players")
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("Footballito.Domain.Entities.Team", b =>
+                {
+                    b.Navigation("AwayMatches");
+
+                    b.Navigation("HomeMatches");
+
+                    b.Navigation("Players");
                 });
 #pragma warning restore 612, 618
         }

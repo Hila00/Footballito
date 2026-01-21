@@ -25,6 +25,24 @@ public class FootballContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Player>()
+            .HasOne(p => p.Team)
+            .WithMany(t => t.Players)
+            .HasForeignKey(p => p.TeamId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Match>()
+            .HasOne(m => m.HomeTeam)
+            .WithMany(t => t.HomeMatches)
+            .HasForeignKey(m => m.HomeTeamId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Match>()
+            .HasOne(m => m.AwayTeam)
+            .WithMany(t => t.AwayMatches)
+            .HasForeignKey(m => m.AwayTeamId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         modelBuilder.Entity<Team>().HasData(
             new Team { Id = 1, Name = "FC Barcelona", City = "Barcelona" },
             new Team { Id = 2, Name = "Real Madrid", City = "Madrid" },

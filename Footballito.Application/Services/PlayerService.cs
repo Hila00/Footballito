@@ -49,6 +49,13 @@ public class PlayerService : IPlayerService
         var existing = await _db.Players.FindAsync(id);
         if (existing is null) throw new NotFoundException($"Player {id} not found");
         _db.Players.Remove(existing);
-        await _db.SaveChangesAsync();
+        try
+        {
+            await _db.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new ConflictException($"Unable to delete player {id}: {ex.Message}");
+        }
     }
 }

@@ -44,9 +44,22 @@ public class TeamService : ITeamService
 
     public async Task DeleteAsync(int id)
     {
-        var existing = await _db.Teams.FindAsync(id);
-        if (existing is null) throw new NotFoundException($"Team {id} not found");
+        var existing = await _db.Teams.FindAsync(id) ?? throw new NotFoundException($"Team {id} not found");
+        var hasPlayers = await _db.Players.AnyAsync(p => p.TeamId == id);
+        var hasMatches = await _db.Matches.AnyAsync(m => m.HomeTeamId == id || m.AwayTeamId == id);
+        if (hasPlayers || hasMatches)
+        {
+            throw new ConflictException($"Team {id} cannot be deleted because it has related players or matches.");
+        }
+
         _db.Teams.Remove(existing);
-        await _db.SaveChangesAsync();
+        try
+        {
+            await _db.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new ConflictException($"Unable to delete team {id}: {ex.Message}");
+        }
     }
 }

@@ -8,11 +8,25 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Footballito.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class SeedTeams : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Teams",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", nullable: true),
+                    City = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Teams", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Matches",
                 columns: table => new
@@ -28,6 +42,18 @@ namespace Footballito.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Matches", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Matches_Teams_AwayTeamId",
+                        column: x => x.AwayTeamId,
+                        principalTable: "Teams",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Matches_Teams_HomeTeamId",
+                        column: x => x.HomeTeamId,
+                        principalTable: "Teams",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -43,20 +69,29 @@ namespace Footballito.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Players", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Players_Teams_TeamId",
+                        column: x => x.TeamId,
+                        principalTable: "Teams",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "Teams",
-                columns: table => new
+            migrationBuilder.InsertData(
+                table: "Teams",
+                columns: new[] { "Id", "City", "Name" },
+                values: new object[,]
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: true),
-                    City = table.Column<string>(type: "TEXT", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Teams", x => x.Id);
+                    { 1, "Barcelona", "FC Barcelona" },
+                    { 2, "Madrid", "Real Madrid" },
+                    { 3, "Manchester", "Manchester United" },
+                    { 4, "Liverpool", "Liverpool FC" },
+                    { 5, "Munich", "Bayern Munich" },
+                    { 6, "Turin", "Juventus" },
+                    { 7, "Paris", "Paris Saint-Germain" },
+                    { 8, "London", "Chelsea FC" },
+                    { 9, "Milan", "AC Milan" },
+                    { 10, "Buenos Aires", "River Plate" }
                 });
 
             migrationBuilder.InsertData(
@@ -82,22 +117,20 @@ namespace Footballito.Persistence.Migrations
                     { 6, "Mohamed", "Salah", 4 }
                 });
 
-            migrationBuilder.InsertData(
-                table: "Teams",
-                columns: new[] { "Id", "City", "Name" },
-                values: new object[,]
-                {
-                    { 1, "Barcelona", "FC Barcelona" },
-                    { 2, "Madrid", "Real Madrid" },
-                    { 3, "Manchester", "Manchester United" },
-                    { 4, "Liverpool", "Liverpool FC" },
-                    { 5, "Munich", "Bayern Munich" },
-                    { 6, "Turin", "Juventus" },
-                    { 7, "Paris", "Paris Saint-Germain" },
-                    { 8, "London", "Chelsea FC" },
-                    { 9, "Milan", "AC Milan" },
-                    { 10, "Buenos Aires", "River Plate" }
-                });
+            migrationBuilder.CreateIndex(
+                name: "IX_Matches_AwayTeamId",
+                table: "Matches",
+                column: "AwayTeamId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Matches_HomeTeamId",
+                table: "Matches",
+                column: "HomeTeamId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Players_TeamId",
+                table: "Players",
+                column: "TeamId");
         }
 
         /// <inheritdoc />

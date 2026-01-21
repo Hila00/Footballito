@@ -8,5 +8,8 @@ public class Match
     public required int AwayTeamId { get; set; }
     public int HomeTeamScore { get; set; }
     public int AwayTeamScore { get; set; }
+
+    public Team HomeTeam { get; set; } = null!;
+    public Team AwayTeam { get; set; } = null!;
 }
 
